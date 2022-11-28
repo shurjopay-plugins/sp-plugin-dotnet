@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sp-plugin-dotnet", "sp-plugin-dotnet\sp-plugin-dotnet.csproj", "{1F717CED-19F0-425F-B404-227BB3DE8E41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnetcore-webmvc-dotnet-plugin", "dotnetcore-webmvc-dotnet-plugin\dotnetcore-webmvc-dotnet-plugin.csproj", "{B0223EB3-8754-43DC-B69C-D74DADAEDC78}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1F717CED-19F0-425F-B404-227BB3DE8E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F717CED-19F0-425F-B404-227BB3DE8E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F717CED-19F0-425F-B404-227BB3DE8E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F717CED-19F0-425F-B404-227BB3DE8E41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0223EB3-8754-43DC-B69C-D74DADAEDC78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0223EB3-8754-43DC-B69C-D74DADAEDC78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0223EB3-8754-43DC-B69C-D74DADAEDC78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0223EB3-8754-43DC-B69C-D74DADAEDC78}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D0AE3DF4-0A8E-4CBC-91D4-88CC4D4EB7EE}
+	EndGlobalSection
+EndGlobal
