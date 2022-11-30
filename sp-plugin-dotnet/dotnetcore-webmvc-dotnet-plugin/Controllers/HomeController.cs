@@ -18,8 +18,6 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
         public IActionResult Index()
         {
             Shurjopay shurjopay= new Shurjopay();
-            //Task<ShurjopayToken?> shurjopayToken = shurjopay.Authenticate();
-           // shurjopay.WriteConsole();
             PaymentRequest paymentRequest = new PaymentRequest();
             paymentRequest.Amount = 10;
             paymentRequest.Prefix = "sp-dotnet";
@@ -31,7 +29,19 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
             paymentRequest.CustomerPhone = "01311310975";
             paymentRequest.CustomerPostCode = "1229";
 
-            Task<PaymentDetails?> paymentDetails =  shurjopay.MakePayment(paymentRequest);
+            Task<PaymentDetails?> paymentDetailsTask =  shurjopay.MakePayment(paymentRequest);
+            PaymentDetails? paymentDetails = paymentDetailsTask.Result;
+            ViewBag.paymentDetails = paymentDetails;
+
+            //Console.WriteLine(shurjopay.IsTokenExpired());
+            /*
+            Task<VerifiedPayment?> paymentStatusTask = shurjopay.CheckPayment("spay612b73a935ab1");
+            VerifiedPayment? verifiedPayment = paymentStatusTask.Result;
+            */
+            /*
+            Task<VerifiedPayment?> verifiedPaymentTask = shurjopay.VerifyPayment("spay612b73a935ab1");
+            VerifiedPayment? verifiedPayment = verifiedPaymentTask.Result;
+            */
 
             return View();
         }
