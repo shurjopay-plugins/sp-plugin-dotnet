@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace sp_plugin_dotnet.Models
 {
-    internal class VerifiedPayment
+    public class VerifiedPayment
     {
+        [JsonPropertyName("id")]
+        public int? Id { get; set; }
+
         [JsonPropertyName("order_id")]
         public string? OrderId { get; set; }
 
@@ -58,7 +61,7 @@ namespace sp_plugin_dotnet.Models
         public string? CustomerOrderId { get; set; }
 
         [JsonPropertyName("sp_code")]
-        public string? SpStatusCode { get; set; }
+        public int? SpStatusCode { get; set; }
 
         [JsonPropertyName("sp_massage")]
         public string? SpStatusMsg { get; set; }
@@ -80,9 +83,16 @@ namespace sp_plugin_dotnet.Models
 	    * value1, value2, value3, value4 is used for customer's additional info if needed
 	    */
 
+        [JsonPropertyName("value1")]
         public string? Value1 { get; set; }
+
+        [JsonPropertyName("value2")]
         public string? Value2 { get; set; }
+
+        [JsonPropertyName("value3")]
         public string? Value3 { get; set; }
+
+        [JsonPropertyName("value4")]
         public string? Value4 { get; set; }
 
         [JsonPropertyName("transaction_status")]
