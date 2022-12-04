@@ -1,7 +1,11 @@
-var builder = WebApplication.CreateBuilder(args);
+using sp_plugin_dotnet.Models;
 
+var builder = WebApplication.CreateBuilder(args);
+// Shurjopay Secrets
+builder.Services.Configure<ShurjopayConfig>(builder.Configuration.GetSection("Shurjopay"));
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddOptions();
 
 var app = builder.Build();
 
