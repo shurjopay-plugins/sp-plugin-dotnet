@@ -5,7 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>dotnetcore_webmvc_dotnet_plugin</RootNamespace>
+    <UserSecretsId>a7ceeb94-6398-4ccc-80f2-14e20506dcab</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.10" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\sp-plugin-dotnet\sp-plugin-dotnet.csproj" />
