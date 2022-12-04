@@ -1,4 +1,7 @@
-﻿using sp_plugin_dotnet.Models;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using sp_plugin_dotnet.Models;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -7,25 +10,45 @@ using System.Collections;
 using System.Net.Http.Headers;
 using System.IO;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 namespace sp_plugin_dotnet
 {
-    //Todo Logging
+    
     public class Shurjopay
     {
-        //TODO get the configuration from example app
-        const string SP_USERNAME = "sp_sandbox";
-        const string SP_PASSWORD = "pyyk97hu&6u6";
-        const string SHURJOPAY_API = "https://sandbox.shurjopayment.com/api/";
-        const string SP_CALLBACK = "https://www.sandbox.shurjopayment.com/response";
+        // Shurjopay Configurations
+        string? SP_USERNAME {set;get;}
+        string? SP_PASSWORD { set; get; }
+        string? SHURJOPAY_API { set; get; }
+        string? SP_CALLBACK { set; get; }
+        ShurjopayToken? AuthToken { get; set; } = null;
+
+        // Shurjopay Status Codes
+        const int SP_SUCCESS = 1000;
 
         // static http client for http request handling
         static readonly HttpClient httpclient = new HttpClient();
-        ShurjopayToken? AuthToken { get; set; } = null;
 
 
-        //TODO doc-string
+
+        /// <summary>
+        /// Constructor to instantiate Shurjopay Class with Shurjopay Configurations.
+        /// </summary>
+        /// <typeparam name="ShurjopayConfig">DTO Model for Dependency Injection.</typeparam>
+        /// <param name="shurjopayConfig">Shurjopay Configuration.</param>
+        public Shurjopay(ShurjopayConfig shurjopayConfig)
+        {
+            this.SP_USERNAME = shurjopayConfig.SP_USERNAME;
+            this.SP_PASSWORD = shurjopayConfig.SP_PASSWORD;
+            this.SP_CALLBACK = shurjopayConfig.SP_CALLBACK;
+            this.SHURJOPAY_API = shurjopayConfig.SHURJOPAY_API;
+
+        }
+
+        /// <summary>
+        /// Authenticate Marchent with Shurjopay Gateway.
+        /// </summary>
+        /// <returns>A <typeparamref name="ShurjopayToken"/> representation of the Authentication Token.</returns>
         public async Task<ShurjopayToken?> Authenticate()
         {
             // Create Token URI
@@ -62,15 +85,18 @@ namespace sp_plugin_dotnet
             }
             return null;
         }
-
-        //Todo doc-string
+        /// <summary>
+        /// Make payment Request to Shurjopay Gateway.
+        /// </summary>
+        /// <typeparam name="PaymentRequest">The type to deserialize the JSON response from Shurjopay API.</typeparam>
+        /// <returns>A <typeparamref name="PaymentDetails"/> Representation of the Payment Details.</returns>
+        /// <param name="request">Payment Request object.</param>
         public async Task<PaymentDetails?> MakePayment(PaymentRequest request)
         {
             try
             {
-                /* Authenticate Marchent if AuthToken is null */
-                //TODO check expiration of auth token
-                if(this.AuthToken == null)
+                // Authenticate Marchent if AuthToken is null or expired
+                if(this.AuthToken == null || IsTokenExpired())
                 {
                     this.AuthToken = await Authenticate();
                 }
@@ -124,16 +150,20 @@ namespace sp_plugin_dotnet
             }
             return null;
         }
-        
 
-        //Todo doc-string
+
+        /// <summary>
+        /// Verify payment Request to Shurjopay Gateway.
+        /// </summary>
+        /// <typeparam name="string">The type of the parameter</typeparam>
+        /// <returns>A <typeparamref name="VerifiedPayment"/> Representation of the Verified Payment Details.</returns>
+        /// <param name="OrderId">Payment Request object.</param>
         public async Task<VerifiedPayment?> VerifyPayment(string OrderId)
         {
             try
             {
-                /* Authenticate Marchent if AuthToken is null */
-                //TODO check expiration of auth token
-                if (this.AuthToken == null)
+                // Authenticate Marchent if AuthToken is null or expired
+                if (this.AuthToken == null || IsTokenExpired())
                 {
                     this.AuthToken = await Authenticate();
                 }
@@ -169,12 +199,10 @@ namespace sp_plugin_dotnet
                 response.EnsureSuccessStatusCode();
                 // Get the payment request details as json object from response
                 string responseBody = await response.Content.ReadAsStringAsync();
-
-
-                //Todo throw Shurjopay exception if sp_code != 1000 
-
-                // Return Verified Payment details as a thread task
-                return JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
+                VerifiedPayment? verifiedPayment = JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
+                if (verifiedPayment.SpStatusCode != SP_SUCCESS)
+                    throw new ShurjopayException($"Code: {verifiedPayment.SpStatusCode} Message: {verifiedPayment.SpStatusMsg}");
+                return verifiedPayment;
              
             }
             catch (HttpRequestException e)
@@ -188,26 +216,30 @@ namespace sp_plugin_dotnet
                 //Todo Log eroor & throw exception
                 Console.WriteLine("\nException Caught!");
                 Console.WriteLine("Message :{0} ", e.Message);
-            }
+            }   
             return null;
         }
 
 
 
-        //Todo doc-string
+        /// <summary>
+        /// Check Payment Details request to Shurjopay Gateway.
+        /// </summary>
+        /// <typeparam name="string">The type of the parameter</typeparam>
+        /// <returns>A <typeparamref name="VerifiedPayment"/> Representation of the Verified Payment Details.</returns>
+        /// <param name="OrderId">Payment Request object.</param>
         public async Task<VerifiedPayment?> CheckPayment(string OrderId)
         {
             try
             {
-                /* Authenticate Marchent if AuthToken is null */
-                //TODO check expiration of auth token
-                if (this.AuthToken == null)
+                // Authenticate Marchent if AuthToken is null or expired
+                if (this.AuthToken == null || IsTokenExpired())
                 {
                     this.AuthToken = await Authenticate();
                 }
             }
-            //Todo Shurjopay Custom Exception
-            catch (Exception e)
+            //TODO LOG 
+            catch (ShurjopayException e)
             {
                 Console.WriteLine("Shurjopay Authentication Exception Caught");
                 Console.WriteLine("Message :{0} ", e.Message);
@@ -254,21 +286,27 @@ namespace sp_plugin_dotnet
             return null;
         }
 
-        //TODO doc-string
+        /// <summary>
+        /// Check if token is expired or not by comparing current time with token creattion time and expiration time
+        /// </summary>
+        /// <returns>A <typeparamref name="bool"/>A boolean value depending the validity of token</returns>
         public bool IsTokenExpired()
         {
             DateTime parsedDate;
             // Parse token creation time to default format
             if (!DateTime.TryParse(this.AuthToken.TokenCreatedTime, out parsedDate))
             {
-                //TODO throw Shurjopay Exception
+                throw new ShurjopayException("Authentication Token Expired");
             }
             // Return false if token is expired otherwise true
             return (parsedDate.AddSeconds((double)this.AuthToken.ExpiredTimeInSecond) > DateTime.Now) ? false : true;
         }
 
-        //TODO doc-string
-        public Hashtable MapPaymentRequest(PaymentRequest request)
+        /// <summary>
+        /// Add Token details with payment request object
+        /// </summary>
+        /// <returns>A <typeparamref name="Hashtable"/>A Hashtable Consisting Payment Request Details</returns>
+        private Hashtable MapPaymentRequest(PaymentRequest request)
         {
             // Store payment request as key value pair
             Hashtable paymentRequest = new Hashtable();
@@ -289,4 +327,13 @@ namespace sp_plugin_dotnet
             return paymentRequest;
         }
     }
+
+    [Serializable]
+    public class ShurjopayException : Exception
+    {
+        public ShurjopayException() : base() { }
+        public ShurjopayException(string message) : base(message) { }
+        public ShurjopayException(string message, Exception inner) : base(message, inner) { }
+    }
+
 }
