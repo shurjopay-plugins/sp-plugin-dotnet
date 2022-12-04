@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace sp_plugin_dotnet.Models
 {
-    internal class ShurjopayConfig
+    public class ShurjopayConfig
     {
-        public string? username { get; set; }
-        public string? password { get; set; }
-        public string? callbackUrl { get; set; }
-        public string? apiBaseUrl { get; set; }
+        public string? SP_USERNAME {set;get;}
+        public string? SP_PASSWORD { set; get; }
+        public string? SHURJOPAY_API { set; get ; }
+        public string? SP_CALLBACK { set; get; }
     }
 }
