@@ -8,11 +8,12 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
 {
     public class ShurjopayController : Controller
     {
-
+        private readonly ILogger<Shurjopay> _logger;
         public Shurjopay Shurjopay;
-        public ShurjopayController(IOptions<ShurjopayConfig> options)
+        public ShurjopayController(IOptions<ShurjopayConfig> options, ILogger<Shurjopay> logger)
         {
-            Shurjopay = new Shurjopay(options.Value);
+            Shurjopay = new Shurjopay(options.Value,logger);
+            _logger = logger;
         }
 
 

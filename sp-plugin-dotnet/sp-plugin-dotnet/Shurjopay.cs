@@ -10,12 +10,16 @@ using System.Collections;
 using System.Net.Http.Headers;
 using System.IO;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace sp_plugin_dotnet
 {
     
     public class Shurjopay
     {
+        //Shurjopay Logger
+        private readonly ILogger<Shurjopay> _logger;
+
         // Shurjopay Configurations
         string? SP_USERNAME {set;get;}
         string? SP_PASSWORD { set; get; }
@@ -29,20 +33,18 @@ namespace sp_plugin_dotnet
         // static http client for http request handling
         static readonly HttpClient httpclient = new HttpClient();
 
-
-
         /// <summary>
         /// Constructor to instantiate Shurjopay Class with Shurjopay Configurations.
         /// </summary>
         /// <typeparam name="ShurjopayConfig">DTO Model for Dependency Injection.</typeparam>
         /// <param name="shurjopayConfig">Shurjopay Configuration.</param>
-        public Shurjopay(ShurjopayConfig shurjopayConfig)
+        public Shurjopay(ShurjopayConfig shurjopayConfig, ILogger<Shurjopay> logger )
         {
             this.SP_USERNAME = shurjopayConfig.SP_USERNAME;
             this.SP_PASSWORD = shurjopayConfig.SP_PASSWORD;
             this.SP_CALLBACK = shurjopayConfig.SP_CALLBACK;
             this.SHURJOPAY_API = shurjopayConfig.SHURJOPAY_API;
-
+            _logger = logger;
         }
 
         /// <summary>
@@ -80,10 +82,14 @@ namespace sp_plugin_dotnet
             }
             catch (HttpRequestException e)
             {
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Htt Exception Caught",e.Message);
+                throw;
             }
-            return null;
+            catch(ShurjopayException e)
+            {
+               _logger.LogError("Authentication Faield", e.Message);
+                throw;
+            }
         }
         /// <summary>
         /// Make payment Request to Shurjopay Gateway.
@@ -102,10 +108,9 @@ namespace sp_plugin_dotnet
                 }
             }
             //Todo Shurjopay Custom Exception
-            catch (Exception e)
+            catch (ShurjopayException e)
             {
-                Console.WriteLine("Shurjopay Authentication Exception Caught");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Authentication Faield", e.Message);
                 throw;
             }
 
@@ -135,20 +140,22 @@ namespace sp_plugin_dotnet
                 // Return Payment Details as thread task
                 return JsonHelper.ToClass<PaymentDetails>(responseBody);
             }
+            catch(ShurjopayException e)
+            {
+                _logger.LogError("Authentication Faield", e.Message);
+                throw;
+            }
             catch (HttpRequestException e)
             {
-                //Todo Log eroor & throw exception
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Shurjopay Http Exception Caught", e.Message);
+                throw;
             }
             catch(IOException e)
             {
-            
-                //Todo Log eroor & throw exception
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
+
+                _logger.LogError("Shurjopay IO Exception Caught", e.Message);
+                throw;
             }
-            return null;
         }
 
 
@@ -168,12 +175,9 @@ namespace sp_plugin_dotnet
                     this.AuthToken = await Authenticate();
                 }
             }
-            //Todo Shurjopay Custom Exception
             catch (Exception e)
             {
-                //Todo Log eroor & throw exception
-                Console.WriteLine("Shurjopay Authentication Exception Caught");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Authentication Faield", e.Message);
                 throw;
             }
             // Create Make Payment URL 
@@ -207,17 +211,14 @@ namespace sp_plugin_dotnet
             }
             catch (HttpRequestException e)
             {
-                //Todo Log eroor & throw exception
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Shurjopay Http Exception Caught", e.Message);
+                throw;
             }
             catch (IOException e)
             {
-                //Todo Log eroor & throw exception
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Shurjopay IO Exception Caught", e.Message);
+                throw;
             }   
-            return null;
         }
 
 
@@ -273,17 +274,14 @@ namespace sp_plugin_dotnet
             }
             catch (HttpRequestException e)
             {
-                //Todo Log eroor & throw exception
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Shurjopay Http Exception Caught", e.Message);
+                throw;
             }
             catch (IOException e)
             {
-                //Todo Log eroor & throw exception
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Shurjopay IO Exception Caught", e.Message);
+                throw;
             }
-            return null;
         }
 
         /// <summary>
