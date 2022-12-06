@@ -20,15 +20,20 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
         // GET: ShurjopayController
         public IActionResult Index()
         {
-
+            Console.WriteLine(Shurjopay.GetLocalIPAddress());
             return View();
         }
 
         // GET: ShurjopayController/Details/5
-        public ActionResult Details(int id)
+        public ActionResult Details(string id)
         {
+            Task<VerifiedPayment?> verifiedPayment = Shurjopay.CheckPayment(id);
+            ViewBag.VerifiedPayment = verifiedPayment;
             return View();
         }
+
+        
+
 
         // GET: ShurjopayController/Create
         public ActionResult Create()
@@ -53,46 +58,5 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
             }
         }
 
-        // GET: ShurjopayController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: ShurjopayController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ShurjopayController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: ShurjopayController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
     }
 }
