@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
+// Author Md Mahabubul Hasan, Since 27/11/2022
 using sp_plugin_dotnet.Models;
 using System;
 using System.Net.Http;
@@ -11,30 +11,27 @@ using System.Net.Http.Headers;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System.Net.Sockets;
+using System.Net;
 
 namespace sp_plugin_dotnet
-{
-    
+{ 
     public class Shurjopay
     {
         //Shurjopay Logger
         private readonly ILogger<Shurjopay> _logger;
-
         // Shurjopay Configurations
         string? SP_USERNAME {set;get;}
         string? SP_PASSWORD { set; get; }
         string? SHURJOPAY_API { set; get; }
         string? SP_CALLBACK { set; get; }
         ShurjopayToken? AuthToken { get; set; } = null;
-
         // Shurjopay Status Codes
         const int SP_SUCCESS = 1000;
-
         // static http client for http request handling
         static readonly HttpClient httpclient = new HttpClient();
-
         /// <summary>
-        /// Constructor to instantiate Shurjopay Class with Shurjopay Configurations.
+        /// Constructor to instantiate Shurjopay with Shurjopay Configurations.
         /// </summary>
         /// <typeparam name="ShurjopayConfig">DTO Model for Dependency Injection.</typeparam>
         /// <param name="shurjopayConfig">Shurjopay Configuration.</param>
@@ -46,7 +43,6 @@ namespace sp_plugin_dotnet
             this.SHURJOPAY_API = shurjopayConfig.SHURJOPAY_API;
             _logger = logger;
         }
-
         /// <summary>
         /// Authenticate Marchent with Shurjopay Gateway.
         /// </summary>
@@ -95,8 +91,8 @@ namespace sp_plugin_dotnet
         /// Make payment Request to Shurjopay Gateway.
         /// </summary>
         /// <typeparam name="PaymentRequest">The type to deserialize the JSON response from Shurjopay API.</typeparam>
-        /// <returns>A <typeparamref name="PaymentDetails"/> Representation of the Payment Details.</returns>
-        /// <param name="request">Payment Request object.</param>
+        /// <returns>A <typeparamref name="PaymentDetails"/> Representation Model Containing Requested Payment Details.</returns>
+        /// <param name="request">Payment Request object.</param> 
         public async Task<PaymentDetails?> MakePayment(PaymentRequest request)
         {
             try
@@ -107,13 +103,11 @@ namespace sp_plugin_dotnet
                     this.AuthToken = await Authenticate();
                 }
             }
-            //Todo Shurjopay Custom Exception
             catch (ShurjopayException e)
             {
                 _logger.LogError("Authentication Faield", e.Message);
                 throw;
             }
-
             // Create Make Payment URI
             string makePayemntUrl = SHURJOPAY_API + Endpoints.MAKE_PAYMENT;
             // Create Shurjopay Payment Request
@@ -157,13 +151,11 @@ namespace sp_plugin_dotnet
                 throw;
             }
         }
-
-
         /// <summary>
-        /// Verify payment Request to Shurjopay Gateway.
+        /// Verify payment Request to Shurjopay Gateway with order-id.
         /// </summary>
         /// <typeparam name="string">The type of the parameter</typeparam>
-        /// <returns>A <typeparamref name="VerifiedPayment"/> Representation of the Verified Payment Details.</returns>
+        /// <returns>A <typeparamref name="VerifiedPayment"/> Representation Model of the Verified Payment Details.</returns>
         /// <param name="OrderId">Payment Request object.</param>
         public async Task<VerifiedPayment?> VerifyPayment(string OrderId)
         {
@@ -175,7 +167,7 @@ namespace sp_plugin_dotnet
                     this.AuthToken = await Authenticate();
                 }
             }
-            catch (Exception e)
+            catch (ShurjopayException e)
             {
                 _logger.LogError("Authentication Faield", e.Message);
                 throw;
@@ -209,6 +201,11 @@ namespace sp_plugin_dotnet
                 return verifiedPayment;
              
             }
+            catch(ShurjopayException e)
+            {
+                _logger.LogError("Shurjopay Exception Caught While Payment Verification ", e.Message);
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 _logger.LogError("Shurjopay Http Exception Caught", e.Message);
@@ -220,9 +217,6 @@ namespace sp_plugin_dotnet
                 throw;
             }   
         }
-
-
-
         /// <summary>
         /// Check Payment Details request to Shurjopay Gateway.
         /// </summary>
@@ -239,11 +233,9 @@ namespace sp_plugin_dotnet
                     this.AuthToken = await Authenticate();
                 }
             }
-            //TODO LOG 
             catch (ShurjopayException e)
             {
-                Console.WriteLine("Shurjopay Authentication Exception Caught");
-                Console.WriteLine("Message :{0} ", e.Message);
+                _logger.LogError("Authentication Faield", e.Message);
                 throw;
             }
             // Create Payment Status URL 
@@ -271,6 +263,11 @@ namespace sp_plugin_dotnet
                 // Return Verified Payment details as a thread task
                 return JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
 
+            }
+            catch (ShurjopayException e)
+            {
+                _logger.LogError("Shurjopay Exception Caught While Payment Checking", e.Message);
+                throw;
             }
             catch (HttpRequestException e)
             {
@@ -321,8 +318,24 @@ namespace sp_plugin_dotnet
             paymentRequest.Add("customer_phone", request.CustomerPhone);
             paymentRequest.Add("customer_city", request.CustomerCity);
             paymentRequest.Add("customer_post_code",request.CustomerPostCode);
-            paymentRequest.Add("client_ip","0.0.0.0"); //TODO get the ip address of host machine
+            paymentRequest.Add("client_ip", GetLocalIPAddress());
             return paymentRequest;
+        }
+        /// <summary>
+        /// Get the local ip address of Marchent
+        /// </summary>
+        /// <returns>A <typeparamref name="string"/>A string consisting marchent's ip address</returns>
+        public string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new ShurjopayException("No network adapters with an IPv4 address in the system!");
         }
     }
 
@@ -333,5 +346,4 @@ namespace sp_plugin_dotnet
         public ShurjopayException(string message) : base(message) { }
         public ShurjopayException(string message, Exception inner) : base(message, inner) { }
     }
-
 }
