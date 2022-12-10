@@ -16,11 +16,9 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
             _logger = logger;
         }
 
-
         // GET: ShurjopayController
         public IActionResult Index()
         {
-            Console.WriteLine(Shurjopay.GetLocalIPAddress());
             return View();
         }
 
@@ -31,9 +29,6 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
             ViewBag.VerifiedPayment = verifiedPayment;
             return View();
         }
-
-        
-
 
         // GET: ShurjopayController/Create
         public ActionResult Create()
