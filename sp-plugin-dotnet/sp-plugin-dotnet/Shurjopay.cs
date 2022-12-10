@@ -1,6 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// Author Md Mahabubul Hasan, Since 27/11/2022
+﻿/// Licensed to the .NET Foundation under one or more agreements.
+/// The .NET Foundation licenses this file to you under the MIT license.
+/// Author Md Mahabubul Hasan, Since 27/11/2022
 using sp_plugin_dotnet.Models;
 using System;
 using System.Net.Http;
@@ -27,7 +27,8 @@ namespace sp_plugin_dotnet
         string? SP_CALLBACK { set; get; }
         ShurjopayToken? AuthToken { get; set; } = null;
         // Shurjopay Status Codes
-        const int SP_SUCCESS = 1000;
+        const string SP_AUTH_SUCCESS = "200"; // get token api returns sp_code in string
+        const int SP_PAYMENT_SUCCESS = 1000;  // make payment api returns sp code in integer 
         // static http client for http request handling
         static readonly HttpClient httpclient = new HttpClient();
         /// <summary>
@@ -73,20 +74,41 @@ namespace sp_plugin_dotnet
                 response.EnsureSuccessStatusCode();
                 // Await for the response content
                 string responseBody = await response.Content.ReadAsStringAsync();
-                // Return Shurjopay Token Model after Deserialization  
-                return JsonHelper.ToClass<ShurjopayToken>(responseBody);
+                ShurjopayToken? spAuthToken = JsonHelper.ToClass<ShurjopayToken>(responseBody);
+                if(spAuthToken.SpStatusCode == SP_AUTH_SUCCESS)
+                    // Return Shurjopay Token Model after Deserialization  
+                    return spAuthToken;
+                _logger.LogError($"Shurjopay Code: {spAuthToken.SpStatusCode}, Shurjopay Message:{spAuthToken.Message}");
+                throw new ShurjopayException("Shurjopay Authentication Faield, Check your credentials");
             }
             catch (HttpRequestException e)
-            {
-                _logger.LogError("Htt Exception Caught",e.Message);
+            {   
+                _logger.LogError("Shurjopay Http Exception Caught", e.Message);
                 throw;
             }
             catch(ShurjopayException e)
             {
-               _logger.LogError("Authentication Faield", e.Message);
+               _logger.LogError("Shurjopay Authentication Faield", e.Message);
                 throw;
             }
         }
+
+        /// <summary>
+        /// Check if token is expired or not by comparing current time with token creattion time and expiration time
+        /// </summary>
+        /// <returns>A <typeparamref name="bool"/>A boolean value depending the validity of token</returns>
+        public bool IsTokenExpired()
+        {
+            DateTime parsedDate;
+            // Parse token creation time to default format
+            if (!DateTime.TryParse(this.AuthToken.TokenCreatedTime, out parsedDate))
+            {
+                throw new ShurjopayException("Authentication Token Expired");
+            }
+            // Return false if token is expired otherwise true
+            return (parsedDate.AddSeconds((double)this.AuthToken.ExpiredTimeInSecond) > DateTime.Now) ? false : true;
+        }
+
         /// <summary>
         /// Make payment Request to Shurjopay Gateway.
         /// </summary>
@@ -196,7 +218,7 @@ namespace sp_plugin_dotnet
                 // Get the payment request details as json object from response
                 string responseBody = await response.Content.ReadAsStringAsync();
                 VerifiedPayment? verifiedPayment = JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
-                if (verifiedPayment.SpStatusCode != SP_SUCCESS)
+                if (verifiedPayment.SpStatusCode != SP_PAYMENT_SUCCESS)
                     throw new ShurjopayException($"Code: {verifiedPayment.SpStatusCode} Message: {verifiedPayment.SpStatusMsg}");
                 return verifiedPayment;
              
@@ -281,21 +303,7 @@ namespace sp_plugin_dotnet
             }
         }
 
-        /// <summary>
-        /// Check if token is expired or not by comparing current time with token creattion time and expiration time
-        /// </summary>
-        /// <returns>A <typeparamref name="bool"/>A boolean value depending the validity of token</returns>
-        public bool IsTokenExpired()
-        {
-            DateTime parsedDate;
-            // Parse token creation time to default format
-            if (!DateTime.TryParse(this.AuthToken.TokenCreatedTime, out parsedDate))
-            {
-                throw new ShurjopayException("Authentication Token Expired");
-            }
-            // Return false if token is expired otherwise true
-            return (parsedDate.AddSeconds((double)this.AuthToken.ExpiredTimeInSecond) > DateTime.Now) ? false : true;
-        }
+       
 
         /// <summary>
         /// Add Token details with payment request object
