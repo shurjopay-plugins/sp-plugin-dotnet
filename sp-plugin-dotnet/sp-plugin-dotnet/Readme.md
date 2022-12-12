@@ -30,7 +30,7 @@ ShurjoPay Online payment gateway has several API's which need to be integrated b
 > Use `nuget` to install shuroPay python plugin
 
 ```
-nuget install shurjopay-v3
+dotnet install shurjopay
 ```
 
 > Or `clone` the repository and add the plugin inside your project
@@ -49,10 +49,10 @@ Then add the sp-plugin-dotnet reference inside your project
 
 ```
 "Shurjopay": {
-    "SP_USERNAME": "sp_sandboxx",
+    "SP_USERNAME": "sp_sandbox",
     "SP_PASSWORD": "pyyk97hu&6u6",
     "SP_CALLBACK": "https://www.sandbox.shurjopayment.com/response",
-    "SHURJOPAY_API": "https://sandbox.shurjopayment.com/api/"
+    "SP_ENDPOINT": "https://sandbox.shurjopayment.com/api/"
   }
 ```
 
@@ -63,17 +63,36 @@ builder.Services.Configure<ShurjopayConfig>(builder.Configuration.GetSection("Sh
 ```
 
 ## Use Case
-> Create Shurjopay Controller and instantiate Shurjopay
+> Instantiate ShurjopayPlugin with Shurjopay Configuration and Logger
 
 ```
- private readonly ILogger<Shurjopay> _logger;
-        public Shurjopay Shurjopay;
-        public ShurjopayController(IOptions<ShurjopayConfig> options, ILogger<Shurjopay> logger)
-        {
-            Shurjopay = new Shurjopay(options.Value,logger);
-            _logger = logger;
-        }
+ private readonly ILogger<ShurjopayPlugin> _logger;
+ public ShurjopayPlugin _ShurjopayPlugin;
+ public ShurjopayController(IOptions<ShurjopayConfig> options, ILogger<ShurjopayPlugin> logger)
+ {
+    _ShurjopayPlugin = new ShurjopayPlugin(options.Value,logger);
+    _logger = logger;
+ }
 ``` 
+> Make Payment Request
+```
+Task<PaymentDetails?> paymentDetailsTask = _ShurjopayPlugin.MakePayment(paymentRequest);
+PaymentDetails? paymentDetails = paymentDetailsTask.Result;
+return Redirect(paymentDetails.CheckOutUrl);
+```
+>Sample Payment Request Object
+```
+PaymentRequest paymentRequest = new PaymentRequest();
+paymentRequest.Amount = 10;
+paymentRequest.Prefix = "sp-dotnet";
+paymentRequest.OrderID= "sp-dotnet-6.00";
+paymentRequest.Currency= "BDT";
+paymentRequest.CustomerName= "Mahabubul";
+paymentRequest.CustomerAddress= "Haque Tower,Mohakhali";
+paymentRequest.CustomerCity= "Dhaka";
+paymentRequest.CustomerPhone = "01311310975";
+paymentRequest.CustomerPostCode = "1229";
+```
 
 ## Documentation
 
