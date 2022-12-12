@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace sp_plugin_dotnet.Models
+namespace Shurjopay.Plugin.Models
 {
     public class PaymentDetails
     {

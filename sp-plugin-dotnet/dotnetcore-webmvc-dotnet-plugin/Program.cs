@@ -1,4 +1,4 @@
-using sp_plugin_dotnet.Models;
+using Shurjopay.Plugin.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 // Shurjopay Secrets
@@ -27,5 +27,9 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Shurjopay}/{action=Ipn}/{order-id?}");
 
 app.Run();

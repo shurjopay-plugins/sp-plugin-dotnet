@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json;
 
-namespace sp_plugin_dotnet
+namespace Shurjopay.Plugin
 {
     public static class JsonHelper
     {

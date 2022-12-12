@@ -1,18 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using sp_plugin_dotnet.Models;
-using sp_plugin_dotnet;
+﻿using Microsoft.AspNetCore.Mvc;
+using Shurjopay.Plugin.Models;
+using Shurjopay.Plugin;
 using Microsoft.Extensions.Options;
 
 namespace dotnetcore_webmvc_dotnet_plugin.Controllers
 {
     public class ShurjopayController : Controller
     {
-        private readonly ILogger<Shurjopay> _logger;
-        public Shurjopay Shurjopay;
-        public ShurjopayController(IOptions<ShurjopayConfig> options, ILogger<Shurjopay> logger)
+        private readonly ILogger<ShurjopayPlugin> _logger;
+        public ShurjopayPlugin _ShurjopayPlugin;
+        public ShurjopayController(IOptions<ShurjopayConfig> options, ILogger<ShurjopayPlugin> logger)
         {
-            Shurjopay = new Shurjopay(options.Value,logger);
+            _ShurjopayPlugin = new ShurjopayPlugin(options.Value,logger);
             _logger = logger;
         }
 
@@ -22,12 +21,23 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
             return View();
         }
 
-        // GET: ShurjopayController/Details/5
-        public ActionResult Details(string id)
+
+        /*
+
+        [Route("/shurjopay/ipn")]
+        public ActionResult Ipn(int orderId)
         {
-            Task<VerifiedPayment?> verifiedPayment = Shurjopay.CheckPayment(id);
-            ViewBag.VerifiedPayment = verifiedPayment;
-            return View();
+            Task<VerifiedPayment?> TVerfiedPayment = Shurjopay.CheckPayment(orderid);
+            VerifiedPayment? verifiedPayment= TVerfiedPayment.Result;
+            return Details(verifiedPayment.OrderId);
+        }
+        */
+
+        // GET: ShurjopayController/Details/5
+        public ActionResult Details(string orderId)
+        {
+            Task<VerifiedPayment?> TVerfiedPayment = _ShurjopayPlugin.CheckPayment("sp-dotnet639585995258e");
+            return View(TVerfiedPayment.Result);
         }
 
         // GET: ShurjopayController/Create
@@ -43,7 +53,7 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
         {
             try
             {
-                Task<PaymentDetails?> paymentDetailsTask = Shurjopay.MakePayment(paymentRequest);
+                Task<PaymentDetails?> paymentDetailsTask = _ShurjopayPlugin.MakePayment(paymentRequest);
                 PaymentDetails? paymentDetails = paymentDetailsTask.Result;
                 return Redirect(paymentDetails.CheckOutUrl);
             }

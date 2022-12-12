@@ -1,8 +1,7 @@
 ﻿using dotnetcore_webmvc_dotnet_plugin.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using sp_plugin_dotnet;
-using sp_plugin_dotnet.Models;
+
 
 namespace dotnetcore_webmvc_dotnet_plugin.Controllers
 {

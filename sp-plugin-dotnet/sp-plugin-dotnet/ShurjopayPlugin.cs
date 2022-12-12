@@ -1,7 +1,7 @@
 ﻿/// Licensed to the .NET Foundation under one or more agreements.
 /// The .NET Foundation licenses this file to you under the MIT license.
 /// Author Md Mahabubul Hasan, Since 27/11/2022
-using sp_plugin_dotnet.Models;
+using Shurjopay.Plugin.Models;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -14,21 +14,21 @@ using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using System.Net;
 
-namespace sp_plugin_dotnet
+namespace Shurjopay.Plugin
 { 
-    public class Shurjopay
+    public class ShurjopayPlugin
     {
         //Shurjopay Logger
-        private readonly ILogger<Shurjopay> _logger;
+        private readonly ILogger<ShurjopayPlugin> _logger;
         // Shurjopay Configurations
         string? SP_USERNAME {set;get;}
         string? SP_PASSWORD { set; get; }
-        string? SHURJOPAY_API { set; get; }
+        string? SP_ENDPOINT { set; get; }
         string? SP_CALLBACK { set; get; }
         ShurjopayToken? AuthToken { get; set; } = null;
         // Shurjopay Status Codes
-        const string SP_AUTH_SUCCESS = "200"; // get token api returns sp_code in string
-        const int SP_PAYMENT_SUCCESS = 1000;  // make payment api returns sp code in integer 
+        const string SP_AUTH_SUCCESS = "200"; // get-token api returns sp_code in string
+        const int SP_PAYMENT_SUCCESS = 1000;  // make-payment api returns sp code in integer 
         // static http client for http request handling
         static readonly HttpClient httpclient = new HttpClient();
         /// <summary>
@@ -36,12 +36,12 @@ namespace sp_plugin_dotnet
         /// </summary>
         /// <typeparam name="ShurjopayConfig">DTO Model for Dependency Injection.</typeparam>
         /// <param name="shurjopayConfig">Shurjopay Configuration.</param>
-        public Shurjopay(ShurjopayConfig shurjopayConfig, ILogger<Shurjopay> logger )
+        public ShurjopayPlugin(ShurjopayConfig shurjopayConfig, ILogger<ShurjopayPlugin> logger )
         {
             this.SP_USERNAME = shurjopayConfig.SP_USERNAME;
             this.SP_PASSWORD = shurjopayConfig.SP_PASSWORD;
             this.SP_CALLBACK = shurjopayConfig.SP_CALLBACK;
-            this.SHURJOPAY_API = shurjopayConfig.SHURJOPAY_API;
+            this.SP_ENDPOINT = shurjopayConfig.SP_ENDPOINT;
             _logger = logger;
         }
         /// <summary>
@@ -51,7 +51,7 @@ namespace sp_plugin_dotnet
         public async Task<ShurjopayToken?> Authenticate()
         {
             // Create Token URI
-            string tokenUrl = SHURJOPAY_API + Endpoints.TOKEN;
+            string tokenUrl = SP_ENDPOINT + Endpoints.TOKEN;
             // Create payload content
             Hashtable payload = new Hashtable();
             payload.Add("username", SP_USERNAME);
@@ -131,7 +131,7 @@ namespace sp_plugin_dotnet
                 throw;
             }
             // Create Make Payment URI
-            string makePayemntUrl = SHURJOPAY_API + Endpoints.MAKE_PAYMENT;
+            string makePayemntUrl = SP_ENDPOINT + Endpoints.MAKE_PAYMENT;
             // Create Shurjopay Payment Request
             var paymentRequest = this.MapPaymentRequest(request);
             // Serialize the Payment Request HashTable to json
@@ -154,11 +154,19 @@ namespace sp_plugin_dotnet
                 // Get the payment request details as json object from response
                 string responseBody = await response.Content.ReadAsStringAsync();
                 // Return Payment Details as thread task
-                return JsonHelper.ToClass<PaymentDetails>(responseBody);
+                PaymentDetails? paymentDetails = JsonHelper.ToClass<PaymentDetails>(responseBody);
+                // Check if payment request is successful
+                if(paymentDetails.CheckOutUrl.Equals(null))
+                {
+                    var ex = new ShurjopayException($"Shurjopay Payment Request Failed");
+                    _logger.LogError(ex, $"Shurjopay Payment Request Failed");
+                    throw ex;
+                }
+                return paymentDetails;
             }
             catch(ShurjopayException e)
             {
-                _logger.LogError("Authentication Faield", e.Message);
+                _logger.LogError("Shurjopay Payment Request Failed", e.Message);
                 throw;
             }
             catch (HttpRequestException e)
@@ -195,7 +203,7 @@ namespace sp_plugin_dotnet
                 throw;
             }
             // Create Make Payment URL 
-            string verifyPayemntUrl = SHURJOPAY_API + Endpoints.VERIFY_PAYMENT;
+            string verifyPayemntUrl = SP_ENDPOINT + Endpoints.VERIFY_PAYMENT;
             Hashtable payload = new Hashtable();
             // Add order id to the payload
             payload.Add("order_id", OrderId);
@@ -218,14 +226,19 @@ namespace sp_plugin_dotnet
                 // Get the payment request details as json object from response
                 string responseBody = await response.Content.ReadAsStringAsync();
                 VerifiedPayment? verifiedPayment = JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
+                // Check if payment is successful
                 if (verifiedPayment.SpStatusCode != SP_PAYMENT_SUCCESS)
-                    throw new ShurjopayException($"Code: {verifiedPayment.SpStatusCode} Message: {verifiedPayment.SpStatusMsg}");
+                {
+                    var ex = new ShurjopayException($"Code: {verifiedPayment.SpStatusCode} Message: {verifiedPayment.SpStatusMsg}");
+                    _logger.LogError(ex, $"Code: {verifiedPayment.SpStatusCode} Message: {verifiedPayment.SpStatusMsg}");
+                    throw ex;
+                }
                 return verifiedPayment;
              
             }
             catch(ShurjopayException e)
             {
-                _logger.LogError("Shurjopay Exception Caught While Payment Verification ", e.Message);
+                _logger.LogError("Shurjopay Payment Verification Faield", e.Message);
                 throw;
             }
             catch (HttpRequestException e)
@@ -245,7 +258,7 @@ namespace sp_plugin_dotnet
         /// <typeparam name="string">The type of the parameter</typeparam>
         /// <returns>A <typeparamref name="VerifiedPayment"/> Representation of the Verified Payment Details.</returns>
         /// <param name="OrderId">Payment Request object.</param>
-        public async Task<VerifiedPayment?> CheckPayment(string OrderId)
+        public async Task<VerifiedPayment?> CheckPayment(string orderId)
         {
             try
             {
@@ -261,9 +274,9 @@ namespace sp_plugin_dotnet
                 throw;
             }
             // Create Payment Status URL 
-            string verifyPayemntUrl = SHURJOPAY_API + Endpoints.PAYMENT_STATUS;
+            string verifyPayemntUrl = SP_ENDPOINT + Endpoints.PAYMENT_STATUS;
             Hashtable payload = new Hashtable();
-            payload.Add("order_id", OrderId);
+            payload.Add("order_id", orderId);
             var jsonContent = JsonHelper.FromClass(payload);
             // Create HttpRequest Message 
             var requestMessage = new HttpRequestMessage
@@ -288,7 +301,7 @@ namespace sp_plugin_dotnet
             }
             catch (ShurjopayException e)
             {
-                _logger.LogError("Shurjopay Exception Caught While Payment Checking", e.Message);
+                _logger.LogError("Shurjopay Exception Caught While Checking Payment", e.Message);
                 throw;
             }
             catch (HttpRequestException e)
@@ -302,8 +315,6 @@ namespace sp_plugin_dotnet
                 throw;
             }
         }
-
-       
 
         /// <summary>
         /// Add Token details with payment request object

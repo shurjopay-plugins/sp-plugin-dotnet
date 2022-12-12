@@ -1,4 +1,4 @@
-﻿namespace sp_plugin_dotnet
+﻿namespace Shurjopay.Plugin
 {
     public static class Endpoints
     {
