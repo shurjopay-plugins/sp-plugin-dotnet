@@ -28,8 +28,13 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Shurjopay}/{action=Ipn}/{order-id?}");
+    pattern: "{controller=Shurjopay}/{action=Details}/{order_id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Shurjopay}/{action=Ipn}/{order_id?}");
 
 app.Run();

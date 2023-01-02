@@ -2,6 +2,8 @@
 using Shurjopay.Plugin.Models;
 using Shurjopay.Plugin;
 using Microsoft.Extensions.Options;
+using dotnetcore_webmvc_dotnet_plugin.Models;
+using NuGet.Protocol;
 
 namespace dotnetcore_webmvc_dotnet_plugin.Controllers
 {
@@ -19,25 +21,6 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
         public IActionResult Index()
         {
             return View();
-        }
-
-
-        /*
-
-        [Route("/shurjopay/ipn")]
-        public ActionResult Ipn(int orderId)
-        {
-            Task<VerifiedPayment?> TVerfiedPayment = Shurjopay.CheckPayment(orderid);
-            VerifiedPayment? verifiedPayment= TVerfiedPayment.Result;
-            return Details(verifiedPayment.OrderId);
-        }
-        */
-
-        // GET: ShurjopayController/Details/5
-        public ActionResult Details(string orderId)
-        {
-            Task<VerifiedPayment?> TVerfiedPayment = _ShurjopayPlugin.CheckPayment("sp-dotnet639585995258e");
-            return View(TVerfiedPayment.Result);
         }
 
         // GET: ShurjopayController/Create
@@ -62,6 +45,40 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
                 return View();
             }
         }
+        // GET: ShurjopayController/Details/5
+        public ActionResult Details(string order_id)
+        {
+            try
+            {
+                Task<VerifiedPayment?> TVerfiedPayment = _ShurjopayPlugin.CheckPayment(order_id);
+                return View(TVerfiedPayment.Result);
+            }
+            catch
+            {
+                return View();
+            }
+        }
+        [Route("/shurjopay/ipn")]
+        [HttpGet]
+        public ActionResult Ipn(string order_id)
+        {
+            try
+            {
 
+                Task<VerifiedPayment?> TVerfiedPayment = _ShurjopayPlugin.VerifyPayment(order_id);
+                VerifiedPayment? verifiedPayment = TVerfiedPayment.Result;
+                return Content(verifiedPayment.ToJson());
+            }
+            catch(ShurjopayException ex)
+            {
+                return Content("order_id not provided");
+                throw ex;
+            }
+        }
+
+
+     
+
+        
     }
 }
