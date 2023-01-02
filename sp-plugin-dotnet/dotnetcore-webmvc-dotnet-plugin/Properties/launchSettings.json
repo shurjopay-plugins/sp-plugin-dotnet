@@ -22,6 +22,9 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "ConnectionStrings": {
+        "UserDatabase": "Server=turing-win;Database=Shurjopay;Trusted_Connection=True;"
       }
     }
   }
