@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <RootNamespace>sp_plugin_dotnet</RootNamespace>
+    <RootNamespace>Shurjopay</RootNamespace>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Nullable>enable</Nullable>
     <UserSecretsId>65762301-42ff-4d45-af02-f74d19cc0eab</UserSecretsId>
