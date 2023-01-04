@@ -45,7 +45,9 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
                 return View();
             }
         }
-        // GET: ShurjopayController/Details/5
+
+
+        // GET: shurjopay/details?order_id={shurjoPay order id}
         public ActionResult Details(string order_id)
         {
             try
@@ -58,6 +60,25 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
                 return View();
             }
         }
+
+        [Route("/shurjopay/callback")]
+        [HttpGet]
+        public ActionResult Callback(string order_id)
+        {
+            try
+            {
+
+                Task<VerifiedPayment?> TVerfiedPayment = _ShurjopayPlugin.VerifyPayment(order_id);
+                VerifiedPayment? verifiedPayment = TVerfiedPayment.Result;
+                // ... omitted for brevity
+                return Content(verifiedPayment.ToJson());
+            }
+            catch (ShurjopayException ex)
+            {
+                throw ex;
+            }
+        }
+
         [Route("/shurjopay/ipn")]
         [HttpGet]
         public ActionResult Ipn(string order_id)
@@ -67,18 +88,13 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
 
                 Task<VerifiedPayment?> TVerfiedPayment = _ShurjopayPlugin.VerifyPayment(order_id);
                 VerifiedPayment? verifiedPayment = TVerfiedPayment.Result;
+                // ... omitted for brevity
                 return Content(verifiedPayment.ToJson());
             }
             catch(ShurjopayException ex)
             {
-                return Content("order_id not provided");
                 throw ex;
             }
         }
-
-
-     
-
-        
     }
 }
