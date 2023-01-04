@@ -2,7 +2,6 @@
 using Shurjopay.Plugin.Models;
 using Shurjopay.Plugin;
 using Microsoft.Extensions.Options;
-using dotnetcore_webmvc_dotnet_plugin.Models;
 using NuGet.Protocol;
 
 namespace dotnetcore_webmvc_dotnet_plugin.Controllers
@@ -45,8 +44,6 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
                 return View();
             }
         }
-
-
         // GET: shurjopay/details?order_id={shurjoPay order id}
         public ActionResult Details(string order_id)
         {
@@ -73,7 +70,7 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
                 // ... omitted for brevity
                 return Content(verifiedPayment.ToJson());
             }
-            catch (ShurjopayException ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -91,7 +88,7 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
                 // ... omitted for brevity
                 return Content(verifiedPayment.ToJson());
             }
-            catch(ShurjopayException ex)
+            catch(Exception ex)
             {
                 throw ex;
             }
