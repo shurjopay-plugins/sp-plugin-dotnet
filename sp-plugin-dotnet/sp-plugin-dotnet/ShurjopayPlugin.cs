@@ -75,8 +75,9 @@ namespace Shurjopay.Plugin
                 // Await for the response content
                 string responseBody = await response.Content.ReadAsStringAsync();
                 ShurjopayToken? spAuthToken = JsonHelper.ToClass<ShurjopayToken>(responseBody);
-                if(spAuthToken.SpStatusCode == SP_AUTH_SUCCESS)
+                if (spAuthToken.SpStatusCode == SP_AUTH_SUCCESS)
                     // Return Shurjopay Token Model after Deserialization  
+                    _logger.LogInformation("Authencticated with Shurjopay");
                     return spAuthToken;
                 _logger.LogError($"Shurjopay Code: {spAuthToken.SpStatusCode}, Shurjopay Message:{spAuthToken.Message}");
                 throw new ShurjopayException("Shurjopay Authentication Faield, Check your credentials");
@@ -162,6 +163,7 @@ namespace Shurjopay.Plugin
                     _logger.LogError(ex, $"Shurjopay Payment Request Failed");
                     throw ex;
                 }
+                _logger.LogInformation("Shurjopay Payment Request Initiated");
                 return paymentDetails;
             }
             catch(ShurjopayException e)
@@ -233,6 +235,7 @@ namespace Shurjopay.Plugin
                     _logger.LogError(ex, $"Code: {verifiedPayment.SpStatusCode} Message: {verifiedPayment.SpStatusMsg}");
                     throw ex;
                 }
+                _logger.LogInformation("Shurjopay Payment Verified");
                 return verifiedPayment;
              
             }
@@ -296,6 +299,7 @@ namespace Shurjopay.Plugin
                 // Get the payment request details as json object from response
                 string responseBody = await response.Content.ReadAsStringAsync();
                 // Return Verified Payment details as a thread task
+                _logger.LogInformation("Shurjopay Verified Payment Detatails Retreaved");
                 return JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
 
             }
