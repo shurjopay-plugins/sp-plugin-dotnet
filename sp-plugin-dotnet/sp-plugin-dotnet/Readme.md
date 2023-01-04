@@ -1,53 +1,39 @@
-﻿![alt text](https://shurjopay.com.bd/dev/images/shurjoPay.png)
+﻿# ![alt text](https://shurjopay.com.bd/dev/images/shurjoPay.png) .NET Package (plugin)
+![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
+[![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
 
-# ShurjoPay Online Payment API Integration
+Official shurjoPay python package (plugin) for merchants or service providers to connect with shurjoPay Payment Gateway v2.1 developed and maintained by shurjoMukhi Limited.
 
-This document has been prepared by Shurjomukhi Limited to enable the online merchants to integrate shurjoPay payment gateway. The information contained in this document is proprietary and confidential to Shurjomukhi Limited, for the product Shurjopay.
+This plugin package can be used with .NET Standert 2.1 applications (e.g. ASP .NET Core, MVC, Web API etc.).
+
+This plugin package makes it easy for you to integrate with shurjoPay v2.1 with just three method calls:
+
+- MakePayment()
+- VerifyPayment()
+- CheckPayemnt()
+
+Also reduces many of the things that you had to do manually
+
+- Handles http request and errors
+- JSON serialization and deserialization
+- Authentication during checkout and verification of payments
 
 ## Audience
 
-This document is intended for the technical personnel of merchants and service providers that want to integrate a new online payment gateway using python plugin provided by shurjoPay.
+This document is intended for the developers and technical personnel of merchants and service providers who want to integrate the shurjoPay online payment gateway using python.
 
-## Integration
+## How to use this shurjoPay Plugin
 
-ShurjoPay Online payment gateway has several API's which need to be integrated by merchants for accessing different services. The available services are:
 
-- Authenticate users
-- Making payment
-- Verifying payment order
-- Checking verified payment order status
-
-## shurjoPay dotnet plugin for dotnet standerd 2.1
-
-**Example Applications**
-
-### [ASP DOT NET CORE WEB MVC 6.00 ](https://github.com/shurjopay-plugins/sp-plugin-usage-examples/tree/dev/django-app-python-plugin)
-
-## Installation
-
-> 📝 **NOTE** Install the package inside your project environment
-
-> Use `nuget` to install shuroPay python plugin
+ > Use `nuget` to install this plugin inside your project environment.
 
 ```
-dotnet install shurjopay
+nuget install ShurjopayPlugin
 ```
 
-> Or `clone` the repository and add the plugin inside your project
+> Add Shurjopay Configuration to your project's user secrets Here is a sample user-secrects configuration.
 
-```
-git clone https://github.com/shurjopay-plugins/sp-plugin-dotnet
-
-```
-
-Then add the sp-plugin-dotnet reference inside your project
-
-
-## Initialize the shurjoPay dotnet plugin with shurjoPay credentials & api-url and marchent's callback url 
-
-> Here is a sample user-secrects configuration for dot net project
-
-```
+```json
 "Shurjopay": {
     "SP_USERNAME": "sp_sandbox",
     "SP_PASSWORD": "pyyk97hu&6u6",
@@ -56,16 +42,17 @@ Then add the sp-plugin-dotnet reference inside your project
   }
 ```
 
-> Now configure the shurjopay secrets inside Program.cs file.
+> Add the Configuration to the Services in Program.cs file.
 ```
 // Shurjopay Secrets
 builder.Services.Configure<ShurjopayConfig>(builder.Configuration.GetSection("Shurjopay"));
 ```
 
-## Use Case
+
+
 > Instantiate ShurjopayPlugin with Shurjopay Configuration and Logger
 
-```
+```c#
  private readonly ILogger<ShurjopayPlugin> _logger;
  public ShurjopayPlugin _ShurjopayPlugin;
  public ShurjopayController(IOptions<ShurjopayConfig> options, ILogger<ShurjopayPlugin> logger)
@@ -74,14 +61,9 @@ builder.Services.Configure<ShurjopayConfig>(builder.Configuration.GetSection("Sh
     _logger = logger;
  }
 ``` 
-> Make Payment Request
-```
-Task<PaymentDetails?> paymentDetailsTask = _ShurjopayPlugin.MakePayment(paymentRequest);
-PaymentDetails? paymentDetails = paymentDetailsTask.Result;
-return Redirect(paymentDetails.CheckOutUrl);
-```
+
 >Sample Payment Request Object
-```
+```c#
 PaymentRequest paymentRequest = new PaymentRequest();
 paymentRequest.Amount = 10;
 paymentRequest.Prefix = "sp-dotnet";
@@ -94,16 +76,30 @@ paymentRequest.CustomerPhone = "01311310975";
 paymentRequest.CustomerPostCode = "1229";
 ```
 
-## Documentation
+> Make Payment Request
+```c#
+Task<PaymentDetails?> paymentDetailsTask = _ShurjopayPlugin.MakePayment(paymentRequest);
+PaymentDetails? paymentDetails = paymentDetailsTask.Result;
+return Redirect(paymentDetails.CheckOutUrl);
+```
 
-### [Developer-Guideline](doc/sp_plugin_developer_guideline.md)
 
-### [Github](https://github.com/shurjopay-plugins)
+> Payment verification can be done after each transaction with shurjopay order id.
 
-## Contacts
+```c#
+  Task<VerifiedPayment?> TVerfiedPayment = _ShurjopayPlugin.VerifyPayment(order_id);
+  VerifiedPayment? verifiedPayment = TVerfiedPayment.Result;
+```
 
-[Shurjopay](https://shurjopay.com.bd/#contacts)
+#### That's all! Now you are ready to use the python plugin to seamlessly integrate with shurjoPay to make your payment system easy and smooth.
+
+## References
+1. [.Net Core Web MVC example application](https://github.com/shurjopay-plugins/sp-plugin-usage-examples/tree/dev/django-app-python-plugin) showing usage of the .Net plugin.
+2. [Sample applications and projects](https://github.com/shurjopay-plugins/sp-plugin-usage-examples) in many different languages and frameworks showing shurjopay integration.
+3. [shurjoPay Postman site](https://documenter.getpostman.com/view/6335853/U16dS8ig) illustrating the request and response flow using the sandbox system.
+4. [shurjopay Plugins](https://github.com/shurjopay-plugins) home page on github
 
 ## License
-
-[MIT](LICENSE)
+This code is under the [MIT open source License](LICENSE).
+#### Please [contact](https://shurjopay.com.bd/#contacts) with shurjoPay team for more detail.
+### Copyright ©️2022 [ShurjoMukhi Limited](https://shurjopay.com.bd/)
