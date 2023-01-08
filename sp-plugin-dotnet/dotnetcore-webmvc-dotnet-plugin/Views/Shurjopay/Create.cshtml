@@ -11,13 +11,8 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Prefix" class="control-label"></label>
-                <input asp-for="Prefix" value ="sp-dotnet" class="form-control" />
-                <span asp-validation-for="Prefix" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" value="100000" class="form-control" />
+                <input asp-for="Amount" value="1" class="form-control" />
                 <span asp-validation-for="Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
