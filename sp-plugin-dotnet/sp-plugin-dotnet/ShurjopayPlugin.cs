@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using System.Net;
 
-
 namespace Shurjopay.Plugin
 { 
     public class ShurjopayPlugin
@@ -22,15 +21,13 @@ namespace Shurjopay.Plugin
         //Shurjopay Logger
         private readonly ILogger<ShurjopayPlugin> _logger;
         // Shurjopay Configurations
-        string? SP_USERNAME {set;get;}
-        string? SP_PASSWORD { set; get; }
-        string? SP_ENDPOINT { set; get; }
-        string? SP_CALLBACK { set; get; }
+        string SP_USERNAME {set; get; }
+        string SP_PASSWORD {set; get; }
+        string SP_ENDPOINT {set; get;}
+        string SP_CALLBACK {set; get;}
+        string SP_PREFIX { set; get; }
         ShurjopayToken? AuthToken { get; set; } = null;
-        // Shurjopay Status Codes
-        const string SP_AUTH_SUCCESS = "200"; // get-token api returns sp_code in string
-        const int SP_PAYMENT_SUCCESS = 1000;  // make-payment api returns sp code in integer 
-        const string SP_INVALID_ORDER = "\"sp_code\":\"1011\""; // matching string for checking invalid order-id
+        
         /// <summary>
         /// Constructor to instantiate Shurjopay with Configurations.
         /// </summary>
@@ -42,6 +39,7 @@ namespace Shurjopay.Plugin
             this.SP_PASSWORD = shurjopayConfig.SP_PASSWORD;
             this.SP_CALLBACK = shurjopayConfig.SP_CALLBACK;
             this.SP_ENDPOINT = shurjopayConfig.SP_ENDPOINT;
+            this.SP_PREFIX = shurjopayConfig.SP_PREFIX;
             _logger = logger;
         }
         /// <summary>
@@ -57,7 +55,7 @@ namespace Shurjopay.Plugin
             payload.Add("username", SP_USERNAME);
             payload.Add("password", SP_PASSWORD);
             // Serialize the hashtable to json
-            var jsonContent = JsonHelper.FromClass(payload);
+            string jsonContent = JsonHelper.FromClass(payload);
             // Create http request message with uri and payload
             HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent,tokenUrl);
             // Call asynchronous network methods in a try/catch block to handle exceptions while authenticating marchent
@@ -72,29 +70,28 @@ namespace Shurjopay.Plugin
                     // Await for the response content
                     string responseBody = await response.Content.ReadAsStringAsync();
                     ShurjopayToken? spAuthToken = JsonHelper.ToClass<ShurjopayToken>(responseBody);
-                    if (spAuthToken.SpStatusCode == SP_AUTH_SUCCESS)
+                    if (spAuthToken.IsSuccess())
                     {
-                        // Return shurjopay token object 
+                        // Return shurjopay token object if authenticated with shurjopay 
                         _logger.LogInformation("Authencticated with Shurjopay");
                         return spAuthToken;
                     }
-                    _logger.LogError($"Shurjopay Code: {spAuthToken.SpStatusCode}, Shurjopay Message:{spAuthToken.Message}");
+                    _logger.LogError($"Shurjopay Code: {spAuthToken.SpCode}, Shurjopay Message:{spAuthToken.SpMessage}");
                     throw new ShurjopayException("Shurjopay Authentication Faield, Check your credentials");
                 }
                
             }
-            catch (HttpRequestException e)
-            {   
-                _logger.LogError("Shurjopay Http Exception Caught", e.Message);
-                throw;
-            }
-            catch(ShurjopayException e)
+            catch (HttpRequestException ex)
             {
-               _logger.LogError("Shurjopay Authentication Faield", e.Message);
-                throw;
+                _logger.LogError("Http Exception Caught During Authentication", ex.Message);
+                throw new ShurjopayException("Http Exception Caught During Authentication", ex);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError("IO Exception Caught During Authentication", ex.Message);
+                throw new ShurjopayException("IO Exception Caught During Authentication", ex);
             }
         }
-
         /// <summary>
         /// Check if token is expired or not by comparing current time with token creattion time and expiration time
         /// </summary>
@@ -135,9 +132,9 @@ namespace Shurjopay.Plugin
             // Create Make Payment URI
             string makePayemntUrl = SP_ENDPOINT + Endpoints.MAKE_PAYMENT;
             // Create Shurjopay Payment Request
-            var paymentRequest = this.MapPaymentRequest(request);
+            Hashtable paymentRequest = this.MapPaymentRequest(request);
             // Serialize the Payment Request HashTable to json
-            var jsonContent = JsonHelper.FromClass(paymentRequest);
+            string jsonContent = JsonHelper.FromClass(paymentRequest);
             // Create http request message with uri and payload
             HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent,makePayemntUrl);
             // Call asynchronous network methods in a try/catch block to handle exceptions while making payment with Shurjopay
@@ -147,7 +144,7 @@ namespace Shurjopay.Plugin
                 {
                     httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(this.AuthToken.TokenType, this.AuthToken.Token);
                     // Send asyncronus post request to get the payment request details
-                    var response = await httpclient.SendAsync(httpRequestMessage);
+                    HttpResponseMessage response = await httpclient.SendAsync(httpRequestMessage);
                     // Ensure the Http Success status
                     response.EnsureSuccessStatusCode();
                     // Get the payment request details as json object from response
@@ -155,32 +152,32 @@ namespace Shurjopay.Plugin
                     // Return Payment Details as thread task
                     PaymentDetails? paymentDetails = JsonHelper.ToClass<PaymentDetails>(responseBody);
                     // Check if payment request is successful
-                    if (paymentDetails.CheckOutUrl.Equals(null))
+                    if (paymentDetails.IsSuccess())
                     {
-                        var ex = new ShurjopayException($"Shurjopay Payment Request Failed");
-                        _logger.LogError(ex, $"Shurjopay Payment Request Failed");
-                        throw ex;
+                        // Return if payment request is successful
+                        _logger.LogInformation("Shurjopay Payment Request Initiated");
+                         return paymentDetails;
+                       
                     }
-                    _logger.LogInformation("Shurjopay Payment Request Initiated");
-                    // Return requested payment details as a thread task
-                    return paymentDetails;
+                    Exception ex = new ShurjopayException("Shurjopay Payment Request Failed");
+                    _logger.LogError(ex, "Shurjopay Payment Request Failed");
+                    throw ex;
                 }
             }
-            catch(ShurjopayException e)
+            catch(ShurjopayException ex)
             {
-                _logger.LogError("Shurjopay Payment Request Failed", e.Message);
+                _logger.LogError("Shurjopay Payment Request Failed", ex.Message);
                 throw;
             }
-            catch (HttpRequestException e)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError("Shurjopay Http Exception Caught", e.Message);
-                throw;
+                _logger.LogError("Http Exception Caught During Payment Request", ex.Message);
+                throw new ShurjopayException("Http Exception Caught During Payment Request", ex);
             }
-            catch(IOException e)
+            catch (IOException ex)
             {
-
-                _logger.LogError("Shurjopay IO Exception Caught", e.Message);
-                throw;
+                _logger.LogError("IO Exception Caught During Payment Request", ex.Message);
+                throw new ShurjopayException("IO Exception Caught During Payment Request", ex);
             }
         }
         /// <summary>
@@ -192,6 +189,16 @@ namespace Shurjopay.Plugin
         /// <exception cref="ShurjopayException">Throws exception if order-id invalid or payment is not successful.</exception>
         public async Task<VerifiedPayment?> VerifyPayment(string OrderId)
         {
+            // Create Make Payment URL 
+            string verifyPayemntUrl = SP_ENDPOINT + Endpoints.VERIFY_PAYMENT;
+            Hashtable payload = new Hashtable();
+            // Add order id to the payload
+            payload.Add("order_id", OrderId);
+            string jsonContent = JsonHelper.FromClass(payload);
+            // Create http request message with uri and payload
+            HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent,verifyPayemntUrl);
+            // Call asynchronous network methods in a try/catch block to handle exceptions while making payment
+            VerifiedPayment? verifiedPayment = null;
             try
             {
                 // Authenticate Marchent if AuthToken is null or expired
@@ -200,75 +207,78 @@ namespace Shurjopay.Plugin
                     this.AuthToken = await Authenticate();
                 }
             }
-            catch (ShurjopayException e)
+            catch (ShurjopayException ex)
             {
-                _logger.LogError("Authentication Faield", e.Message);
+                _logger.LogError("Authentication Faield", ex.Message);
                 throw;
             }
-            // Create Make Payment URL 
-            string verifyPayemntUrl = SP_ENDPOINT + Endpoints.VERIFY_PAYMENT;
-            Hashtable payload = new Hashtable();
-            // Add order id to the payload
-            payload.Add("order_id", OrderId);
-            var jsonContent = JsonHelper.FromClass(payload);
-            // Create http request message with uri and payload
-            HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent,verifyPayemntUrl);
-            // Call asynchronous network methods in a try/catch block to handle exceptions while making payment
             try
             {
                 using (HttpClient httpclient = new HttpClient())
                 {
                     httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(this.AuthToken.TokenType, this.AuthToken.Token);
                     // Send asyncronus post reques to get the payment request details
-                    var response = await httpclient.SendAsync(httpRequestMessage);
+                    HttpResponseMessage response = await httpclient.SendAsync(httpRequestMessage);
                     // Ensure the Http Success status
                     response.EnsureSuccessStatusCode();
                     // Get the payment request details as json object from response
                     string responseBody = await response.Content.ReadAsStringAsync();
-                    // Check in the response json string if it contains shurjopay invalid order-id 
-                    if(responseBody.Contains(SP_INVALID_ORDER))
+                    try
                     {
-                        _logger.LogError("Invalid Order ID");
-                        throw new ShurjopayException("Shurjopay Invalid Order-Id Recevied");
-                    }
-                    VerifiedPayment? verifiedPayment = JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
-                    // Check if payment is successful
-                    if (verifiedPayment.SpStatusCode != SP_PAYMENT_SUCCESS)
-                    {
-                        var ex = new ShurjopayException($"Code: {verifiedPayment.SpStatusCode} Message: {verifiedPayment.SpStatusMsg}");
-                        _logger.LogError(ex, $"Code: {verifiedPayment.SpStatusCode} Message: {verifiedPayment.SpStatusMsg}");
+                        verifiedPayment = JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
+                        // Check if payment is successful
+                        if (verifiedPayment.IsSuccess())
+                        {
+                            // Return verified payment object as a thread task
+                            _logger.LogInformation("Shurjopay Payment Verified");
+                            return verifiedPayment;
+                        }
+                        ShurjopayException ex = new ShurjopayException($"Code: {verifiedPayment.SpCode} Message: {verifiedPayment.SpMessage}");
+                        _logger.LogError(ex, $"Code: {verifiedPayment.SpCode} Message: {verifiedPayment.SpMessage}");
                         throw ex;
+
                     }
-                    // Return verified payment object as a thread task
-                    _logger.LogInformation("Shurjopay Payment Verified");
-                    return verifiedPayment;
+                    catch(ShurjopayException)
+                    {
+                        // Reurn null if invalid order id provied / response is not serializable
+                        return verifiedPayment;
+                    }
                 }
              
             }
-            catch(ShurjopayException e)
+            catch(ShurjopayException ex)
             {
-                _logger.LogError("Shurjopay Payment Verification Faield", e.Message);
+                _logger.LogError("Shurjopay Payment Verification Faield", ex.Message);
                 throw;
             }
-            catch (HttpRequestException e)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError("Shurjopay Http Exception Caught", e.Message);
-                throw;
+                _logger.LogError("Http Exception Caught During Payment Verification", ex.Message);
+                throw new ShurjopayException("Http Exception Caught During Payment Verification", ex);
             }
-            catch (IOException e)
+            catch (IOException ex)
             {
-                _logger.LogError("Shurjopay IO Exception Caught", e.Message);
-                throw;
-            }   
+                _logger.LogError("IO Exception Caught During Payment Verification", ex.Message);
+                throw new ShurjopayException("IO Exception Caught During Payment Verification", ex);
+            }
         }
         /// <summary>
         /// Check Payment Details request to Shurjopay Gateway.
         /// </summary>
         /// <typeparam name="string">The type of the parameter</typeparam>
-        /// <returns>A <typeparamref name="VerifiedPayment"/> Representation of the Verified Payment Details.</returns>
+        /// <returns>A <typeparamref name="VerifiedPayment"/> Representation of the Payment Details else null if invalid order id provided.</returns>
         /// <param name="OrderId">Payment Request object.</param>
         public async Task<VerifiedPayment?> CheckPayment(string orderId)
         {
+            VerifiedPayment? verifiedPayment=null;
+            // Create Payment Status URL 
+            string checkPayemntUrl = SP_ENDPOINT + Endpoints.PAYMENT_STATUS;
+            Hashtable payload = new Hashtable();
+            payload.Add("order_id", orderId);
+            string jsonContent = JsonHelper.FromClass(payload);
+            // Create HttpRequest Message 
+            HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent, checkPayemntUrl);
+            // Call asynchronous network methods in a try/catch block to handle exceptions while making payment
             try
             {
                 // Authenticate Marchent if AuthToken is null or expired
@@ -277,50 +287,58 @@ namespace Shurjopay.Plugin
                     this.AuthToken = await Authenticate();
                 }
             }
-            catch (ShurjopayException e)
+            catch (ShurjopayException ex)
             {
-                _logger.LogError("Authentication Faield", e.Message);
+                _logger.LogError("Authentication Faield", ex.Message);
                 throw;
             }
-            // Create Payment Status URL 
-            string checkPayemntUrl = SP_ENDPOINT + Endpoints.PAYMENT_STATUS;
-            Hashtable payload = new Hashtable();
-            payload.Add("order_id", orderId);
-            string jsonContent = JsonHelper.FromClass(payload);
-            // Create HttpRequest Message 
-            HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent,checkPayemntUrl);
-            // Call asynchronous network methods in a try/catch block to handle exceptions while making payment
             try
             {
                 using (HttpClient httpclient = new HttpClient())
                 {
                     httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(this.AuthToken.TokenType, this.AuthToken.Token);
                     // Send asyncronus post reques to get the payment details
-                    var response = await httpclient.SendAsync(httpRequestMessage);
+                    HttpResponseMessage response = await httpclient.SendAsync(httpRequestMessage);
                     // Ensure the Http Success status
                     response.EnsureSuccessStatusCode();
                     // Get the payment request details as json object from response
                     string responseBody = await response.Content.ReadAsStringAsync();
-                    // Return Verified Payment details object as a thread task
-                    _logger.LogInformation("Shurjopay Verified Payment Detatails Retreaved");
-                    return JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
+                    try
+                    {
+                        verifiedPayment = JsonHelper.ToClass<List<VerifiedPayment?>>(responseBody)[0];
+                        // Check if payment is successful
+                        if (verifiedPayment.IsSuccess())
+                        {
+                            // Return verified payment object
+                            _logger.LogInformation("Shurjopay Payment Details Recived");
+                            return verifiedPayment;
+                        }
+                        ShurjopayException ex = new ShurjopayException($"Code: {verifiedPayment.SpCode} Message: {verifiedPayment.SpMessage}");
+                        _logger.LogError(ex, $"Code: {verifiedPayment.SpCode} Message: {verifiedPayment.SpMessage}");
+                        throw ex;
+                    }
+                    catch (ShurjopayException)
+                    {
+                        // Reurn null if invalid order id provied / response is not serializable
+                        return verifiedPayment;
+                    }
                 }
 
             }
-            catch (ShurjopayException e)
+            catch (ShurjopayException ex)
             {
-                _logger.LogError("Shurjopay Exception Caught While Checking Payment", e.Message);
+                _logger.LogError("Shurjopay Exception Caught While Check Payment", ex.Message);
                 throw;
             }
-            catch (HttpRequestException e)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError("Shurjopay Http Exception Caught", e.Message);
-                throw;
+                _logger.LogError("Http Exception Caught During Payment Check", ex.Message);
+                throw new ShurjopayException("Http Exception Caught During Payment Check",ex);
             }
-            catch (IOException e)
+            catch (IOException ex)
             {
-                _logger.LogError("Shurjopay IO Exception Caught", e.Message);
-                throw;
+                _logger.LogError("IO Exception Caught During Payment Check", ex.Message);
+                throw new ShurjopayException("IO Exception Caught During Payment Check", ex);
             }
         }
 
@@ -334,9 +352,9 @@ namespace Shurjopay.Plugin
             Hashtable paymentRequest = new Hashtable();
             paymentRequest.Add("token", this.AuthToken.Token);
             paymentRequest.Add("store_id", this.AuthToken.StoreId);
-            paymentRequest.Add("return_url", SP_CALLBACK);
-            paymentRequest.Add("cancel_url", SP_CALLBACK);
-            paymentRequest.Add("prefix", request.Prefix);
+            paymentRequest.Add("return_url", SP_CALLBACK+Endpoints.RETURN);
+            paymentRequest.Add("cancel_url", SP_CALLBACK+Endpoints.CANCEL);
+            paymentRequest.Add("prefix", this.SP_PREFIX);
             paymentRequest.Add("amount", request.Amount);
             paymentRequest.Add("order_id", request.OrderId);
             paymentRequest.Add("currency", request.Currency);
@@ -370,7 +388,7 @@ namespace Shurjopay.Plugin
         /// <returns>A <typeparamref name="string"/>A string consisting marchent's ip address</returns>
         public string GetLocalIPAddress()
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
             {
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
