@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shurjopay.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Shurjopay.Plugin.Models
 {
-    public class VerifiedPayment
+    public class VerifiedPayment:ShurjopayStatus
     {
         [JsonPropertyName("id")]
         public int? Id { get; set; }
@@ -19,25 +20,25 @@ namespace Shurjopay.Plugin.Models
         public string? Currency { get; set; }
 
         [JsonPropertyName("amount")]
-        public double? Amount { get; set; }
+        public string? Amount { get; set; }
 
         [JsonPropertyName("payable_amount")]
-        public double? PayableAmount { get; set; }
+        public string? PayableAmount { get; set; }
 
         [JsonPropertyName("discsount_amount")]
-        public double? DiscountAmount { get; set; }
+        public string? DiscountAmount { get; set; }
 
         [JsonPropertyName("disc_percent")]
-        public double? Discpercent { get; set; }
+        public int? Discpercent { get; set; }
 
         [JsonPropertyName("usd_amt")]
-        public double? UsdAmt { get; set; }
+        public string? UsdAmt { get; set; }
 
         [JsonPropertyName("usd_rate")]
-        public double? UsdRate { get; set; }
+        public int? UsdRate { get; set; }
 
         [JsonPropertyName("recived_amount")]
-        public double? ReceivedAmt { get; set; }
+        public string? ReceivedAmt { get; set; }
 
         [JsonPropertyName("card_holder_name")]
         public string? CardHolder { get; set; }
@@ -59,12 +60,6 @@ namespace Shurjopay.Plugin.Models
 
         [JsonPropertyName("customer_order_id")]
         public string? CustomerOrderId { get; set; }
-
-        [JsonPropertyName("sp_code")]
-        public int? SpStatusCode { get; set; }
-
-        [JsonPropertyName("sp_massage")]
-        public string? SpStatusMsg { get; set; }
 
         [JsonPropertyName("name")]
         public string? CustomerName { get; set; }
@@ -103,5 +98,9 @@ namespace Shurjopay.Plugin.Models
 
         [JsonPropertyName("date_time")]
         public string? TxnTime { get; set; }
+        public override bool IsSuccess()
+        {
+            return !string.IsNullOrEmpty(SpCode) && SpCode == SP_PAYMENT_SUCCESS;
+        }
     }
 }

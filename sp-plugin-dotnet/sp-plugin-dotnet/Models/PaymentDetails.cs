@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Shurjopay.Models;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-
 namespace Shurjopay.Plugin.Models
 {
-    public class PaymentDetails
+    public class PaymentDetails:ShurjopayStatus
     {
         [JsonPropertyName("checkout_url")]
         public string? CheckOutUrl { get; set; }
@@ -47,5 +42,10 @@ namespace Shurjopay.Plugin.Models
 
         [JsonPropertyName("transactionStatus")]
         public string? TransactionStatus { get; set; }
+
+        public override bool IsSuccess()
+        {
+            return !string.IsNullOrEmpty(SpCode) && SpCode == SP_SUCCESS && !string.IsNullOrEmpty(CheckOutUrl);
+        }
     }
 }
