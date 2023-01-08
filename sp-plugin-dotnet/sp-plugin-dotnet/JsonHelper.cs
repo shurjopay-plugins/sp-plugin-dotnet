@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Logging;
+using Shurjopay.Models;
+using Shurjopay.Plugin.Models;
+using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace Shurjopay.Plugin
@@ -19,11 +23,19 @@ namespace Shurjopay.Plugin
             where TClass : class
         {
             string response = string.Empty;
+            try
+            {
 
-            if (!EqualityComparer<TClass>.Default.Equals(data))
-                response = JsonSerializer.Serialize(data, options: options);
+                if (!EqualityComparer<TClass>.Default.Equals(data))
+                    response = JsonSerializer.Serialize(data, options: options);
 
-            return isEmptyToNull ? response == "{}" ? "null" : response : response;
+                return isEmptyToNull ? response == "{}" ? "null" : response : response;
+            }
+            catch(JsonException ex)
+            {
+                
+                throw new ShurjopayException("Cannot Serialize Json Response from Shurjopay", ex);
+            }
         }
 
         /// <summary>
@@ -38,10 +50,17 @@ namespace Shurjopay.Plugin
             where TClass : class
         {
             TClass? response = default(TClass);
+            try
+            {
+                return string.IsNullOrEmpty(data)
+                 ? response
+                 : JsonSerializer.Deserialize<TClass>(data, options ?? null);
 
-            return string.IsNullOrEmpty(data)
-                ? response
-                : JsonSerializer.Deserialize<TClass>(data, options ?? null);
+            } catch (JsonException ex)
+            {
+                throw new ShurjopayException("Cannot Deserialize the Json Response from Shurjopay",ex);
+            }       
         }
+
     }
 }
