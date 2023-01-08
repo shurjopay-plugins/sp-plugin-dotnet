@@ -44,7 +44,7 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
                 return View();
             }
         }
-        // GET: shurjopay/details?order_id={shurjoPay order id}
+        // GET: shurjopay/details?order_id={shurjopay order id}
         public ActionResult Details(string order_id)
         {
             try
@@ -58,9 +58,18 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
             }
         }
 
-        [Route("/shurjopay/callback")]
+
+        [Route("/shurjopay/cancel")]
         [HttpGet]
-        public ActionResult Callback(string order_id)
+        public ActionResult Cancel()
+        {
+            return Redirect("/shurjopay");
+        }
+
+
+        [Route("/shurjopay/return")]
+        [HttpGet]
+        public ActionResult Return(string order_id)
         {
             try
             {
@@ -72,7 +81,8 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
             }
             catch (Exception ex)
             {
-                throw ex;
+                _logger.LogError(ex.Message);
+                throw;
             }
         }
 
@@ -90,7 +100,8 @@ namespace dotnetcore_webmvc_dotnet_plugin.Controllers
             }
             catch(Exception ex)
             {
-                throw ex;
+                _logger.LogError(ex.Message);
+                throw;
             }
         }
     }
