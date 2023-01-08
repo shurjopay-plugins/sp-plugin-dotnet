@@ -6,10 +6,9 @@
         public const string MAKE_PAYMENT = "secret-pay";
         public const string VERIFY_PAYMENT = "verification";
         public const string PAYMENT_STATUS = "payment-status";
+        public const string RETURN = "return";
+        public const string CANCEL = "cancel";
     }
-
 }
-
-
 
 
