@@ -39,6 +39,7 @@ nuget install ShurjopayPlugin
     "SP_PASSWORD": "pyyk97hu&6u6",
     "SP_CALLBACK": "https://www.sandbox.shurjopayment.com/response",
     "SP_ENDPOINT": "https://sandbox.shurjopayment.com/api/"
+    "SP_PREFIX": "sp-dotnet"
   }
 ```
 
