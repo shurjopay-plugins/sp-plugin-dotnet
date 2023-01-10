@@ -5,8 +5,6 @@ VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sp-plugin-dotnet", "sp-plugin-dotnet\sp-plugin-dotnet.csproj", "{1F717CED-19F0-425F-B404-227BB3DE8E41}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnetcore-webmvc-dotnet-plugin", "dotnetcore-webmvc-dotnet-plugin\dotnetcore-webmvc-dotnet-plugin.csproj", "{B0223EB3-8754-43DC-B69C-D74DADAEDC78}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{03004B1A-E848-4468-A797-D84A53A6FD6D}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -22,10 +20,6 @@ Global
 		{1F717CED-19F0-425F-B404-227BB3DE8E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F717CED-19F0-425F-B404-227BB3DE8E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F717CED-19F0-425F-B404-227BB3DE8E41}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B0223EB3-8754-43DC-B69C-D74DADAEDC78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B0223EB3-8754-43DC-B69C-D74DADAEDC78}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B0223EB3-8754-43DC-B69C-D74DADAEDC78}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B0223EB3-8754-43DC-B69C-D74DADAEDC78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

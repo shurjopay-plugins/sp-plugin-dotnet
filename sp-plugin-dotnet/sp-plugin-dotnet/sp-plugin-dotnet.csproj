@@ -6,6 +6,43 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Nullable>enable</Nullable>
     <UserSecretsId>65762301-42ff-4d45-af02-f74d19cc0eab</UserSecretsId>
+    <PackageProjectUrl>https://github.com/shurjopay-plugins</PackageProjectUrl>
+    <PackageIcon>shurjopay.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/shurjopay-plugins/sp-plugin-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>shurjoPay;Plugin;</PackageTags>
+    <PackAsTool>False</PackAsTool>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <AnalysisLevel>5.0-minimum</AnalysisLevel>
+    <Copyright>Copyright (c) 2022 shurjoMukhi Limited (shurjomukhi.com.bd)</Copyright>
+    <Product>Shurjopay Plugin</Product>
+    <Company> shurjoMukhi Limited </Company>
+    <Authors>Mahabubul Hasan</Authors>
+    <Version>0.0.1</Version>
+    <Title>Official shurjoPay .net package (plugin) for merchants or service providers to connect with shurjoPay Payment Gateway v2.1 developed and maintained by shurjoMukhi Limited.</Title>
+    <PackageId>Shurjopay Plugin</PackageId>
+    <Description>
+      Official shurjoPay .net package (plugin) for merchants or service providers to connect with shurjoPay Payment Gateway v2.1 developed and maintained by shurjoMukhi Limited.
+
+      This plugin package can be used with dotnet standert 2.1 applications.
+
+      This plugin package makes it easy for you to integrate with shurjoPay v2.1 with just three method calls:
+
+      MakePayment()
+      VerifyPaymentent()
+      CheckPayment()
+      Also reduces many of the things that you had to do manually
+
+      Handles http request and errors
+      JSON serialization and deserialization
+      Authentication during checkout and verification of payments
+      Audience
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +51,23 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="NuGet.CommandLine" Version="2.8.6" />
     <PackageReference Include="System.Text.Json" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="shurjopay.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
