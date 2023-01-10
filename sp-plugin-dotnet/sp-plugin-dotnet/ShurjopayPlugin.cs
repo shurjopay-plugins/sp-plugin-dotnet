@@ -157,7 +157,6 @@ namespace Shurjopay.Plugin
                         // Return if payment request is successful
                         _logger.LogInformation("Shurjopay Payment Request Initiated");
                          return paymentDetails;
-                       
                     }
                     Exception ex = new ShurjopayException("Shurjopay Payment Request Failed");
                     _logger.LogError(ex, "Shurjopay Payment Request Failed");
@@ -322,7 +321,7 @@ namespace Shurjopay.Plugin
                         // Reurn null if invalid order id provied / response is not serializable
                         return verifiedPayment;
                     }
-                }
+                } 
 
             }
             catch (ShurjopayException ex)
@@ -371,7 +370,7 @@ namespace Shurjopay.Plugin
         /// Get the HttpRequest message of the given content and uri
         /// </summary>
         /// <returns>A <typeparamref name="HttpRequestMessage"/>A HttpRequestMessage object</returns>
-        private HttpRequestMessage GetHttpRequestMessage(string jsonContent,string uri)
+        private static HttpRequestMessage GetHttpRequestMessage(string jsonContent,string uri)
         {
             HttpRequestMessage requestMessage = new HttpRequestMessage
             {
@@ -386,7 +385,7 @@ namespace Shurjopay.Plugin
         /// Get the local ip address of Marchent
         /// </summary>
         /// <returns>A <typeparamref name="string"/>A string consisting marchent's ip address</returns>
-        public string GetLocalIPAddress()
+        public static string GetLocalIPAddress()
         {
             IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
