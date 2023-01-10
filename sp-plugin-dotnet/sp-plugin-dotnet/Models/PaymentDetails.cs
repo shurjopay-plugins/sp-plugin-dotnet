@@ -43,9 +43,13 @@ namespace Shurjopay.Plugin.Models
         [JsonPropertyName("transactionStatus")]
         public string? TransactionStatus { get; set; }
 
+        /// <summary>
+        /// Checl of Payment Requset is succesful or not
+        /// </summary>
+        /// <returns>true if Payment Request is successful else false</returns>
         public override bool IsSuccess()
         {
-            return !string.IsNullOrEmpty(SpCode) && SpCode == SP_SUCCESS && !string.IsNullOrEmpty(CheckOutUrl);
+            return !string.IsNullOrEmpty(CheckOutUrl) && !string.IsNullOrEmpty(CheckOutUrl);
         }
     }
 }
