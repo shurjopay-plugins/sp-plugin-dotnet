@@ -16,16 +16,16 @@
     <AssemblyVersion>0.0.0.1</AssemblyVersion>
     <FileVersion>0.0.0.1</FileVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AnalysisLevel>5.0-minimum</AnalysisLevel>
-    <Copyright>Copyright (c) 2022 shurjoMukhi Limited (shurjomukhi.com.bd)</Copyright>
+    <Copyright>MIT License. Copyright (c) 2022 shurjoMukhi Limited (shurjomukhi.com.bd)</Copyright>
     <Product>Shurjopay Plugin</Product>
     <Company> shurjoMukhi Limited </Company>
     <Authors>Mahabubul Hasan</Authors>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
     <Title>Official shurjoPay .net package (plugin) for merchants or service providers to connect with shurjoPay Payment Gateway v2.1 developed and maintained by shurjoMukhi Limited.</Title>
-    <PackageId>Shurjopay Plugin</PackageId>
+    <PackageId>ShurjopayPlugin</PackageId>
     <Description>
       Official shurjoPay .net package (plugin) for merchants or service providers to connect with shurjoPay Payment Gateway v2.1 developed and maintained by shurjoMukhi Limited.
 
@@ -43,11 +43,14 @@
       Authentication during checkout and verification of payments
       Audience
     </Description>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
-    <None Include="..\LICENSE">
+    <None Include="..\..\..\test\sp-plugin-dotnet\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
@@ -55,10 +58,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\shurjopay.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
   <ItemGroup>

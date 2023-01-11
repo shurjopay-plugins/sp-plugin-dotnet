@@ -297,7 +297,7 @@ namespace Shurjopay.Plugin
                 {
                     httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(this.AuthToken.TokenType, this.AuthToken.Token);
                     // Send asyncronus post reques to get the payment details
-                    HttpResponseMessage response = await httpclient.SendAsync(httpRequestMessage);
+                    HttpResponseMessage response = await httpclient.SendAsync(GetHttpRequestMessage(jsonContent, checkPayemntUrl));
                     // Ensure the Http Success status
                     response.EnsureSuccessStatusCode();
                     // Get the payment request details as json object from response
