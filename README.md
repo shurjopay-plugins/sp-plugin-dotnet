@@ -28,7 +28,7 @@ This document is intended for the developers and technical personnel of merchant
  > Use `nuget` to install this plugin inside your project environment.
 
 ```
-nuget install ShurjopayPlugin
+ Install-Package ShurjopayPlugin
 ```
 
 > Add Shurjopay Configuration to your project's user secrets Here is a sample user-secrects configuration.
