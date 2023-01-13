@@ -5,25 +5,24 @@
     <RootNamespace>Shurjopay</RootNamespace>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Nullable>enable</Nullable>
-    <UserSecretsId>65762301-42ff-4d45-af02-f74d19cc0eab</UserSecretsId>
-    <PackageProjectUrl>https://github.com/shurjopay-plugins</PackageProjectUrl>
-    <PackageIcon>shurjopay.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/shurjopay-plugins/sp-plugin-usage-examples/tree/main/dotnetcore-webmvc-app-dotnet-plugin</PackageProjectUrl>
+    <PackageIcon>assets/pay.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/shurjopay-plugins/sp-plugin-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>shurjoPay;Plugin;</PackageTags>
+    <PackageTags>shurjoPay;Plugin;ShurjoMukhi</PackageTags>
     <PackAsTool>False</PackAsTool>
-    <AssemblyVersion>0.0.0.1</AssemblyVersion>
-    <FileVersion>0.0.0.1</FileVersion>
+    <AssemblyVersion>0.0.0.2</AssemblyVersion>
+    <FileVersion>0.0.0.2</FileVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AnalysisLevel>5.0-minimum</AnalysisLevel>
     <Copyright>MIT License. Copyright (c) 2022 shurjoMukhi Limited (shurjomukhi.com.bd)</Copyright>
-    <Product>Shurjopay Plugin</Product>
+    <Product>Plugin</Product>
     <Company> shurjoMukhi Limited </Company>
     <Authors>Mahabubul Hasan</Authors>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Title>Official shurjoPay .net package (plugin) for merchants or service providers to connect with shurjoPay Payment Gateway v2.1 developed and maintained by shurjoMukhi Limited.</Title>
     <PackageId>ShurjopayPlugin</PackageId>
     <Description>
@@ -50,15 +49,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\test\sp-plugin-dotnet\README.md">
+    <None Include="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,6 +62,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="assets\pay.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Update="LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
@@ -76,10 +74,9 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Update="shurjopay.png">
+    <None Update="shurjoPay.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
 </Project>
