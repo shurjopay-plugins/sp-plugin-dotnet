@@ -1,4 +1,4 @@
-﻿# ![ShurjoPay](assets/shurjoPay.png) .NET Package (plugin)
+﻿# ![ShurjoPay](shurjopay.png) .NET Package (plugin)
 ![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
 [![.Nuget](https://badge.fury.io/nu/ShurjopayPlugin.svg)](https://www.nuget.org/packages/ShurjopayPlugin)
 ![downloads](https://img.shields.io/nuget/dt/ShurjopayPlugin)
