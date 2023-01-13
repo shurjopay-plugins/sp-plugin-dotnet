@@ -56,15 +56,13 @@ namespace Shurjopay.Plugin
             payload.Add("password", SP_PASSWORD);
             // Serialize the hashtable to json
             string jsonContent = JsonHelper.FromClass(payload);
-            // Create http request message with uri and payload
-            HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent,tokenUrl);
             // Call asynchronous network methods in a try/catch block to handle exceptions while authenticating marchent
             try
             {
                 using (HttpClient httpclient = new HttpClient())
                 {
                     // Send asyncronus post reques & await for the response
-                    var response = await httpclient.SendAsync(httpRequestMessage);
+                    var response = await httpclient.SendAsync(GetHttpRequestMessage(jsonContent, tokenUrl));
                     // Ensure the Http request is successful
                     response.EnsureSuccessStatusCode();
                     // Await for the response content
@@ -135,8 +133,6 @@ namespace Shurjopay.Plugin
             Hashtable paymentRequest = this.MapPaymentRequest(request);
             // Serialize the Payment Request HashTable to json
             string jsonContent = JsonHelper.FromClass(paymentRequest);
-            // Create http request message with uri and payload
-            HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent,makePayemntUrl);
             // Call asynchronous network methods in a try/catch block to handle exceptions while making payment with Shurjopay
             try
             {
@@ -144,7 +140,7 @@ namespace Shurjopay.Plugin
                 {
                     httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(this.AuthToken.TokenType, this.AuthToken.Token);
                     // Send asyncronus post request to get the payment request details
-                    HttpResponseMessage response = await httpclient.SendAsync(httpRequestMessage);
+                    HttpResponseMessage response = await httpclient.SendAsync(GetHttpRequestMessage(jsonContent, makePayemntUrl));
                     // Ensure the Http Success status
                     response.EnsureSuccessStatusCode();
                     // Get the payment request details as json object from response
@@ -188,16 +184,14 @@ namespace Shurjopay.Plugin
         /// <exception cref="ShurjopayException">Throws exception if order-id invalid or payment is not successful.</exception>
         public async Task<VerifiedPayment?> VerifyPayment(string OrderId)
         {
+            VerifiedPayment? verifiedPayment = null;
             // Create Make Payment URL 
             string verifyPayemntUrl = SP_ENDPOINT + Endpoints.VERIFY_PAYMENT;
             Hashtable payload = new Hashtable();
             // Add order id to the payload
             payload.Add("order_id", OrderId);
             string jsonContent = JsonHelper.FromClass(payload);
-            // Create http request message with uri and payload
-            HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent,verifyPayemntUrl);
             // Call asynchronous network methods in a try/catch block to handle exceptions while making payment
-            VerifiedPayment? verifiedPayment = null;
             try
             {
                 // Authenticate Marchent if AuthToken is null or expired
@@ -217,7 +211,7 @@ namespace Shurjopay.Plugin
                 {
                     httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(this.AuthToken.TokenType, this.AuthToken.Token);
                     // Send asyncronus post reques to get the payment request details
-                    HttpResponseMessage response = await httpclient.SendAsync(httpRequestMessage);
+                    HttpResponseMessage response = await httpclient.SendAsync(GetHttpRequestMessage(jsonContent, verifyPayemntUrl));
                     // Ensure the Http Success status
                     response.EnsureSuccessStatusCode();
                     // Get the payment request details as json object from response
@@ -275,8 +269,6 @@ namespace Shurjopay.Plugin
             Hashtable payload = new Hashtable();
             payload.Add("order_id", orderId);
             string jsonContent = JsonHelper.FromClass(payload);
-            // Create HttpRequest Message 
-            HttpRequestMessage httpRequestMessage = GetHttpRequestMessage(jsonContent, checkPayemntUrl);
             // Call asynchronous network methods in a try/catch block to handle exceptions while making payment
             try
             {
